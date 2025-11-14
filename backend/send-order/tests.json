@@ -1,0 +1,28 @@
+{
+  "tests": [
+    {
+      "name": "Test valid order submission",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "name": "Мария Иванова",
+        "email": "maria@example.com",
+        "phone": "+79991234567",
+        "service": "Крафтовые сыры",
+        "message": "Хочу заказать набор сыров"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "message": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Test OPTIONS request for CORS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    }
+  ]
+}

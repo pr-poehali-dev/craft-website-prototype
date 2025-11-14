@@ -1,15 +1,78 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState('home');
+  const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+  
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    service: '',
+    message: ''
+  });
 
   const scrollToSection = (sectionId: string) => {
     setActiveSection(sectionId);
     const element = document.getElementById(sectionId);
     element?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmitOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('https://functions.poehali.dev/eee41583-4409-45b7-94e4-3425f9e5d3e3', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast({
+          title: 'Заявка отправлена!',
+          description: data.message,
+        });
+        setIsOrderDialogOpen(false);
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          service: '',
+          message: ''
+        });
+      } else {
+        throw new Error(data.error || 'Ошибка отправки');
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось отправить заявку. Попробуйте позже.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const services = [
@@ -160,9 +223,93 @@ const Index = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold text-primary mb-4">{service.price}</p>
-                  <Button className="w-full" variant="outline">
-                    Заказать
-                  </Button>
+                  <Dialog open={isOrderDialogOpen} onOpenChange={setIsOrderDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        className="w-full" 
+                        variant="outline"
+                        onClick={() => setFormData(prev => ({ ...prev, service: service.title }))}
+                      >
+                        Заказать
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[500px]">
+                      <DialogHeader>
+                        <DialogTitle className="text-2xl">Оформить заказ</DialogTitle>
+                        <DialogDescription>
+                          Заполните форму, и я свяжусь с вами в ближайшее время
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form onSubmit={handleSubmitOrder} className="space-y-4 mt-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="name">Ваше имя *</Label>
+                          <Input
+                            id="name"
+                            placeholder="Мария Иванова"
+                            value={formData.name}
+                            onChange={(e) => handleInputChange('name', e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="email">Email *</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            placeholder="maria@example.com"
+                            value={formData.email}
+                            onChange={(e) => handleInputChange('email', e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="phone">Телефон *</Label>
+                          <Input
+                            id="phone"
+                            type="tel"
+                            placeholder="+7 (999) 123-45-67"
+                            value={formData.phone}
+                            onChange={(e) => handleInputChange('phone', e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="service">Услуга *</Label>
+                          <Select 
+                            value={formData.service} 
+                            onValueChange={(value) => handleInputChange('service', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Выберите услугу" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Крафтовые сыры">Крафтовые сыры</SelectItem>
+                              <SelectItem value="Домашние сладости">Домашние сладости</SelectItem>
+                              <SelectItem value="Подарочные наборы">Подарочные наборы</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="message">Комментарий</Label>
+                          <Textarea
+                            id="message"
+                            placeholder="Расскажите подробнее о вашем заказе..."
+                            value={formData.message}
+                            onChange={(e) => handleInputChange('message', e.target.value)}
+                            rows={3}
+                          />
+                        </div>
+                        <Button 
+                          type="submit" 
+                          className="w-full" 
+                          size="lg"
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting ? 'Отправка...' : 'Отправить заявку'}
+                        </Button>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
                 </CardContent>
               </Card>
             ))}
