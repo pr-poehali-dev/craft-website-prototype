@@ -13,6 +13,7 @@ const Index = () => {
   const [activeSection, setActiveSection] = useState('home');
   const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
@@ -327,8 +328,9 @@ const Index = () => {
             {portfolio.map((item, index) => (
               <div 
                 key={index} 
-                className="group relative overflow-hidden rounded-2xl shadow-lg animate-fade-in hover:shadow-2xl transition-all duration-300"
+                className="group relative overflow-hidden rounded-2xl shadow-lg animate-fade-in hover:shadow-2xl transition-all duration-300 cursor-pointer"
                 style={{ animationDelay: `${index * 0.15}s` }}
+                onClick={() => setSelectedImage(item.image)}
               >
                 <img 
                   src={item.image} 
@@ -338,11 +340,32 @@ const Index = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute bottom-0 left-0 right-0 p-6">
                     <h3 className="text-white text-xl font-bold">{item.title}</h3>
+                    <p className="text-white/80 text-sm mt-1">Нажмите для увеличения</p>
                   </div>
                 </div>
               </div>
             ))}
           </div>
+          
+          <Dialog open={selectedImage !== null} onOpenChange={(open) => !open && setSelectedImage(null)}>
+            <DialogContent className="max-w-4xl p-0 overflow-hidden">
+              {selectedImage && (
+                <div className="relative">
+                  <button
+                    onClick={() => setSelectedImage(null)}
+                    className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                  >
+                    <Icon name="X" size={24} />
+                  </button>
+                  <img 
+                    src={selectedImage} 
+                    alt="Увеличенное фото"
+                    className="w-full h-auto max-h-[85vh] object-contain"
+                  />
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
       </section>
 
