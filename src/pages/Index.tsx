@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,6 +15,7 @@ const Index = () => {
   const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
@@ -26,6 +28,7 @@ const Index = () => {
 
   const scrollToSection = (sectionId: string) => {
     setActiveSection(sectionId);
+    setIsMobileMenuOpen(false);
     const element = document.getElementById(sectionId);
     element?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -118,7 +121,8 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-primary">Крафтовая мастерская</h1>
-            <div className="flex gap-6">
+            
+            <div className="hidden md:flex gap-6">
               <button 
                 onClick={() => scrollToSection('home')}
                 className={`transition-colors hover:text-primary ${activeSection === 'home' ? 'text-primary' : 'text-foreground'}`}
@@ -144,6 +148,42 @@ const Index = () => {
                 Портфолио
               </button>
             </div>
+
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild className="md:hidden">
+                <Button variant="ghost" size="icon">
+                  <Icon name="Menu" size={24} />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <div className="flex flex-col gap-6 mt-8">
+                  <button 
+                    onClick={() => scrollToSection('home')}
+                    className={`text-left text-lg transition-colors hover:text-primary ${activeSection === 'home' ? 'text-primary font-semibold' : 'text-foreground'}`}
+                  >
+                    Главная
+                  </button>
+                  <button 
+                    onClick={() => scrollToSection('about')}
+                    className={`text-left text-lg transition-colors hover:text-primary ${activeSection === 'about' ? 'text-primary font-semibold' : 'text-foreground'}`}
+                  >
+                    Обо мне
+                  </button>
+                  <button 
+                    onClick={() => scrollToSection('services')}
+                    className={`text-left text-lg transition-colors hover:text-primary ${activeSection === 'services' ? 'text-primary font-semibold' : 'text-foreground'}`}
+                  >
+                    Услуги
+                  </button>
+                  <button 
+                    onClick={() => scrollToSection('portfolio')}
+                    className={`text-left text-lg transition-colors hover:text-primary ${activeSection === 'portfolio' ? 'text-primary font-semibold' : 'text-foreground'}`}
+                  >
+                    Портфолио
+                  </button>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </nav>
